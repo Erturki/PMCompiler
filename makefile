@@ -3,23 +3,31 @@ SRC_DIR = $(BASE_DIR)/src
 LIB_DIR = $(BASE_DIR)/lib
 INCLUDE_DIR = $(BASE_DIR)/include
 
-all: TerminalTable.o
+SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
+SRC_FILES += $(wildcard $(SRC_DIR)/*.cc)
+OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(LIB_DIR)/%.o,$(SRC_FILES))
 
 
+CXXFLAGS += -MMD
+
+all:  lexer PMCompiler.exe Test_PMCompiler.exe
+	
 include ./src/yacc/yacc.mk
 include ./src/lex/lex.mk
+include ./tst/test.mk
+
+PMCompiler.exe: $(OBJ_FILES) 
+	g++ -o $@ $^
+
+$(LIB_DIR)/%.o: $(SRC_DIR)/%.cpp
+	g++ $(CPPFLAGS) -std=c++0x -c -o $@ $< -I $(INCLUDE_DIR)
+	@echo $(SRC_FILES)
+	@echo $(OBJ_FILES)
 
 
-TerminalTable.o: $(SRC_DIR)/TerminalTable.cpp
-	g++ -c $^ -I $(INCLUDE_DIR)
-	mv TerminalTable.o $(LIB_DIR)/TerminalTable.o
-
-scanner:
-	g++ -c src/lex.yy.cc src/PMCompiler.cpp -I$(INCLUDE_DIR) -L $(LIB_DIR)
-	g++ lex.yy.o PMCompiler.o -o $@ -lfl
+-include $(OBJ_FILES:.o=.d)
 
 clean::
-	rm -f $(OBJS)
-	rm -f scanner.exe
-	rm -f *.o *~
-
+	rm -f $(OBJ_FILES)
+	rm -f PMCompiler.exe
+	rm -rf *~	

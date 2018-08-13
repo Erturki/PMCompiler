@@ -20,6 +20,8 @@ public:
 	static TerminalTable* Instance();
 	bool isKeyword(string keyword);
 	bool isSupported(string keyword);
+	bool isInOrder();
+	void free();
 
 private:
 	TerminalTable() {};

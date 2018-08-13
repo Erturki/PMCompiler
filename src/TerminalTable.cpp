@@ -18,6 +18,11 @@ TerminalTable* TerminalTable::Instance() {
 	return m_instance;
 }
 
+void TerminalTable::free() {
+	delete m_instance;
+	m_instance = nullptr;
+}
+
 bool TerminalTable::isKeyword(string keyword) {
 	TerminalTable::Terminal* terminal = find(keyword);
 	if(terminal != NULL && std::get<0>(*terminal).compare(keyword) == 0)
@@ -44,14 +49,26 @@ TerminalTable::Terminal* TerminalTable::find(string keyword) {
 		if(keyword.compare(TerminalValue) < 0) {
 			end = middle - 1;
 		}
- 		else if (keyword.compare(TerminalValue) > 0) {
+		else if (keyword.compare(TerminalValue) > 0) {
 			begin = middle + 1;
 		}
 		else {
 			return &(c_keywords[middle]);
 		}
 	}
-	return NULL;
+	return nullptr;
+}
+
+/* Checks if the c_keywords array is in lexicographic order
+ * ONLY USED BY UNIT TEST
+ * */
+bool TerminalTable::isInOrder() {
+	for(int i = 0; i < size-1; i++) {
+		if(std::get<0>(c_keywords[i]).compare(std::get<0>(c_keywords[i+1])) >= 0) {
+			return false;
+		}
+	}
+	return true;
 }
 
 /* This keyword lookup table must be a ordered list.
@@ -59,40 +76,42 @@ TerminalTable::Terminal* TerminalTable::find(string keyword) {
  * the table is in order
  */
 TerminalTable::Terminal TerminalTable::c_keywords[] = {
-			make_tuple("_Bool",0),
-			make_tuple("_Complex",0),
-			make_tuple("_Imaginary",0),
-			make_tuple("auto",0),
-			make_tuple("break",0),
-			make_tuple("case",0),
-			make_tuple("char",0),
-			make_tuple("const",0),
-			make_tuple("continue",0),
-			make_tuple("default",0),
-			make_tuple("do",0),
-			make_tuple("double",0),
-			make_tuple("else",0),
-			make_tuple("enum",0),
-			make_tuple("extern",0),
-			make_tuple("float",0),
-			make_tuple("for",0),
-			make_tuple("goto",0),
-			make_tuple("if",0),
-			make_tuple("inline",0),
-			make_tuple("int",0),
-			make_tuple("long",0),
-			make_tuple("register",0),
-			make_tuple("restrict",0),
-			make_tuple("return",0),
-			make_tuple("short",0),
-			make_tuple("signed",0),
-			make_tuple("sizeof",0),
-			make_tuple("while",0),
-			make_tuple("struct",0),
-			make_tuple("switch",0),
-			make_tuple("typedef",0),
-			make_tuple("union",0),
-			make_tuple("unsigned",0),
-			make_tuple("void",0),
-			make_tuple("volatile",0),
+		make_tuple("_Bool",0),
+		make_tuple("_Complex",0),
+		make_tuple("_Imaginary",0),
+		make_tuple("auto",0),
+		make_tuple("break",0),
+		make_tuple("case",0),
+		make_tuple("char",0),
+		make_tuple("const",0),
+		make_tuple("continue",0),
+		make_tuple("default",0),
+		make_tuple("do",0),
+		make_tuple("double",0),
+		make_tuple("else",0),
+		make_tuple("enum",0),
+		make_tuple("extern",0),
+		make_tuple("float",0),
+		make_tuple("for",0),
+		make_tuple("goto",0),
+		make_tuple("if",0),
+		make_tuple("inline",0),
+		make_tuple("int",0),
+		make_tuple("long",0),
+		make_tuple("register",0),
+		make_tuple("restrict",0),
+		make_tuple("return",0),
+		make_tuple("short",0),
+		make_tuple("signed",0),
+		make_tuple("sizeof",0),
+		make_tuple("static",0),
+		make_tuple("struct",0),
+		make_tuple("switch",0),
+		make_tuple("typedef",0),
+		make_tuple("union",0),
+		make_tuple("unsigned",0),
+		make_tuple("void",0),
+		make_tuple("volatile",0),
+		make_tuple("while",0),
+
 };

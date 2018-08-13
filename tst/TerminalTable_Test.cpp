@@ -18,3 +18,7 @@ TEST(TerminalTable, isSupported) {
 	ASSERT_FALSE(instance->isSupported("int"));
 	ASSERT_FALSE(instance->isSupported("num"));
 }
+
+TEST(TerminalTable, isInOrder) {
+	ASSERT_TRUE(TerminalTable::Instance()->isInOrder());
+}
