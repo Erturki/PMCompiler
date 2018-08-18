@@ -1,20 +1,21 @@
 %{
 	#include <string>
-	#include "yacc.hpp"
+	#include "LexicalScanner.hpp"
 	#include "LiteralTable.h"
-	/*
+	using token = yy::parser::token;
+
 	#undef YY_DECL
-	#define YY_DECL int yy::LexicalScanner::yylex(yy::parser::semantic_type* const lval, yy::parser::location_type* loc)
+	#define YY_DECL int yy::LexicalScanner::yylex(yy::parser::semantic_type * const lval, yy::parser::location_type * loc )
 	#define YY_USER_ACTION loc->step(); loc->columns(yyleng);
-	#define yyterminate() return yy::parser::token::END
-	%option yyclass = "yy:LexicalScanner"
-	*/
+	#define yyterminate() return(token::END)
+	
 	LiteralTable* literalTable = LiteralTable::Instance();
 %}
 
 /* Specify options to configure the Flex generated scanner */
+%option yyclass="yy::LexicalScanner"
 %option nomain noyywrap
-%option 8bit c++ 
+%option c++ 
 %option yylineno
 %pointer
 
@@ -26,6 +27,8 @@ E   ([Ee][+-]?{D}+)
 FS  (f|F|l|L)
 IS  (((u|U)(l|L|ll|LL)?)|((l|L|ll|LL)(u|U)?))
 WS  [ \t\v\n\f\r]
+
+
 
 %%
 
@@ -46,110 +49,100 @@ WS  [ \t\v\n\f\r]
 						}
 "//"[^\n]*              { /* consume //-comment */ }
 
-"auto"					{ return(yy::parser::token::AUTO); }
-"break"					{ return(yy::parser::token::BREAK); }
-"case"					{ return(yy::parser::token::CASE); }
-"char"					{ return(yy::parser::token::CHAR); }
-"const"					{ return(yy::parser::token::CONST); }
-"continue"				{ return(yy::parser::token::CONTINUE); }
-"default"				{ return(yy::parser::token::DEFAULT); }
-"do"					{ return(yy::parser::token::DO); }
-"double"				{ return(yy::parser::token::DOUBLE); }
-"else"					{ return(yy::parser::token::ELSE); }
-"enum"					{ return(yy::parser::token::ENUM); }
-"extern"				{ return(yy::parser::token::EXTERN); }
-"float"					{ return(yy::parser::token::FLOAT); }
-"for"					{ return(yy::parser::token::FOR); }
-"goto"					{ return(yy::parser::token::GOTO); }
-"if"					{ return(yy::parser::token::IF); }
-"int"					{ return(yy::parser::token::INT); }
-"long"					{ return(yy::parser::token::LONG); }
-"register"				{ return(yy::parser::token::REGISTER); }
-"return"				{ return(yy::parser::token::RETURN); }
-"short"					{ return(yy::parser::token::SHORT); }
-"signed"				{ return(yy::parser::token::SIGNED); }
-"sizeof"				{ return(yy::parser::token::SIZEOF); }
-"static"				{ return(yy::parser::token::STATIC); }
-"struct"				{ return(yy::parser::token::STRUCT); }
-"switch"				{ return(yy::parser::token::SWITCH); }
-"typedef"				{ return(yy::parser::token::TYPEDEF); }
-"union"					{ return(yy::parser::token::UNION); }
-"unsigned"				{ return(yy::parser::token::UNSIGNED); }
-"void"					{ return(yy::parser::token::VOID); }
-"volatile"				{ return(yy::parser::token::VOLATILE); }
-"while"					{ return(yy::parser::token::WHILE); }
-
-"inline"				{ return(yy::parser::token::INLINE); }
-"restrict"				{ return(yy::parser::token::RESTRICT); }
-"_Bool"                 { return(yy::parser::token::BOOL); }
-"_Complex"              { return(yy::parser::token::COMPLEX); }
-"_Imaginary"            { return(yy::parser::token::IMAGINARY); }
+"auto"					{ return(token::AUTO); }
+"break"					{ return(token::BREAK); }
+"case"					{ return(token::CASE); }
+"char"					{ return(token::CHAR); }
+"const"					{ return(token::CONST); }
+"continue"				{ return(token::CONTINUE); }
+"default"				{ return(token::DEFAULT); }
+"do"					{ return(token::DO); }
+"double"				{ return(token::DOUBLE); }
+"else"					{ return(token::ELSE); }
+"enum"					{ return(token::ENUM); }
+"extern"				{ return(token::EXTERN); }
+"float"					{ return(token::FLOAT); }
+"for"					{ return(token::FOR); }
+"goto"					{ return(token::GOTO); }
+"if"					{ return(token::IF); }
+"int"					{ return(token::INT); }
+"long"					{ return(token::LONG); }
+"register"				{ return(token::REGISTER); }
+"return"				{ return(token::RETURN); }
+"short"					{ return(token::SHORT); }
+"signed"				{ return(token::SIGNED); }
+"sizeof"				{ return(token::SIZEOF); }
+"static"				{ return(token::STATIC); }
+"struct"				{ return(token::STRUCT); }
+"switch"				{ return(token::SWITCH); }
+"typedef"				{ return(token::TYPEDEF); }
+"union"					{ return(token::UNION); }
+"unsigned"				{ return(token::UNSIGNED); }
+"void"					{ return(token::VOID); }
+"volatile"				{ return(token::VOLATILE); }
+"while"					{ return(token::WHILE); }
 
 {L}{A}*						{ 
-								/* create a symbol
-								 * make an entry in symbol table
-								 * /
-								return(yy::parser::token::IDENTIFIER); 
+								return(token::IDENTIFIER); 
 							}
 							
 {NZ}{D}*{IS}?				{ 
 								literalTable->put(INT_LITERAL, YYText()); 
-								return(yy::parser::token::I_CONSTANT); 
+								return(token::I_CONSTANT);
 							}
-
+L?'(\\.|[^\\'])+'			{
+								literalTable->put(CHAR_LITERAL, YYText());
+								return(token::I_CONSTANT);
+							}
 {D}+{E}{FS}?				{ 
 								literalTable->put(FLOAT_LITERAL, YYText()); 
-								return(yy::parser::token::F_CONSTANT); 
+								return(token::F_CONSTANT); 
 							}
 {D}*"."{D}+{E}?{FS}?		{ 
 								literalTable->put(FLOAT_LITERAL, YYText()); 
-								return(yy::parser::token::F_CONSTANT); 
+								return(token::F_CONSTANT); 
 							}
-{D}+"."{E}?{FS}?			{ 
+{D}+"."{D}*{E}?{FS}?		{ 
 								literalTable->put(FLOAT_LITERAL, YYText()); 
-								return(yy::parser::token::F_CONSTANT); 
+								return(token::F_CONSTANT); 
 							}
-L?'(\\.|]^\\'\n])+'			{ 
-								literalTable->put(CHAR_LITERAL, YYText()); 
-								return(yy::parser::token::I_CONSTANT); 
-							}
-L?\"(\\.|[^\\"\n)*\"		{
+L?\"(\\.|[^\\"])*\"			{
 								literalTable->put(CHAR_LITERAL, YYText());
-								return(yy::parser::token::STRING_LITERAL);
+								return(token::STRING_LITERAL);
 							}
 
-"..."					{ return(yy::parser::token::ELLIPSIS); }
-">>="					{ return(yy::parser::token::RIGHT_ASSIGN); }
-"<<="					{ return(yy::parser::token::LEFT_ASSIGN); }
-"+="					{ return(yy::parser::token::ADD_ASSIGN); }
-"-="					{ return(yy::parser::token::SUB_ASSIGN); }
-"*="					{ return(yy::parser::token::MUL_ASSIGN); }
-"/="					{ return(yy::parser::token::DIV_ASSIGN); }
-"%="					{ return(yy::parser::token::MOD_ASSIGN); }
-"&="					{ return(yy::parser::token::AND_ASSIGN); }
-"^="					{ return(yy::parser::token::XOR_ASSIGN); }
-"|="					{ return(yy::parser::token::OR_ASSIGN); }
-">>"					{ return(yy::parser::token::RIGHT_OP); }
-"<<"					{ return(yy::parser::token::LEFT_OP); }
-"++"					{ return(yy::parser::token::INC_OP); }
-"--"					{ return(yy::parser::token::DEC_OP); }
-"->"					{ return(yy::parser::token::PTR_OP); }
-"&&"					{ return(yy::parser::token::AND_OP); }
-"||"					{ return(yy::parser::token::OR_OP); }
-"<="					{ return(yy::parser::token::LE_OP); }
-">="					{ return(yy::parser::token::GE_OP); }
-"=="					{ return(yy::parser::token::EQ_OP); }
-"!="					{ return(yy::parser::token::NE_OP); }
+"..."					{ return(token::ELLIPSIS); }
+">>="					{ return(token::RIGHT_ASSIGN); }
+"<<="					{ return(token::LEFT_ASSIGN); }
+"+="					{ return(token::ADD_ASSIGN); }
+"-="					{ return(token::SUB_ASSIGN); }
+"*="					{ return(token::MUL_ASSIGN); }
+"/="					{ return(token::DIV_ASSIGN); }
+"%="					{ return(token::MOD_ASSIGN); }
+"&="					{ return(token::AND_ASSIGN); }
+"^="					{ return(token::XOR_ASSIGN); }
+"|="					{ return(token::OR_ASSIGN); }
+">>"					{ return(token::RIGHT_OP); }
+"<<"					{ return(token::LEFT_OP); }
+"++"					{ return(token::INC_OP); }
+"--"					{ return(token::DEC_OP); }
+"->"					{ return(token::PTR_OP); }
+"&&"					{ return(token::AND_OP); }
+"||"					{ return(token::OR_OP); }
+"<="					{ return(token::LE_OP); }
+">="					{ return(token::GE_OP); }
+"=="					{ return(token::EQ_OP); }
+"!="					{ return(token::NE_OP); }
 ";"					{ return ';'; }
-("{"|"<%")				{ return '{'; }
-("}"|"%>")				{ return '}'; }
+("{"|"<%")			{ return '{'; }
+("}"|"%>")			{ return '}'; }
 ","					{ return ','; }
 ":"					{ return ':'; }
 "="					{ return '='; }
 "("					{ return '('; }
 ")"					{ return ')'; }
-("["|"<:")				{ return '['; }
-("]"|":>")				{ return ']'; }
+("["|"<:")			{ return '['; }
+("]"|":>")			{ return ']'; }
 "."					{ return '.'; }
 "&"					{ return '&'; }
 "!"					{ return '!'; }
@@ -169,7 +162,7 @@ L?\"(\\.|[^\\"\n)*\"		{
 .					{ /* warn and abort bad characters */
 						 std::cout << "Error: unrecognized character \"" << YYText()
 						 		   << "\" at line: " << lineno() << endl;
-						 //exit(1);
+						 exit(1);
 					}
 
 %%

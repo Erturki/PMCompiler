@@ -10,7 +10,7 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(LIB_DIR)/%.o,$(SRC_FILES))
 
 CXXFLAGS += -MMD
 
-all:  lexer PMCompiler.exe Test_PMCompiler.exe
+all: parser lexer PMCompiler.exe Test_PMCompiler.exe
 	
 include ./src/yacc/yacc.mk
 include ./src/lex/lex.mk

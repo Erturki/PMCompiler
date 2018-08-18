@@ -12,13 +12,16 @@ namespace yy{
 
 class LexicalScanner : public yyFlexLexer {
 	public:
-		LexicalScanner() : yyFlexLexer() { set_debug(false); }
-		using FlexLexer::yylex;
-		virtual int yylex(parser::semantic_type* const lval, parser::location_type* loc);
+		LexicalScanner(std::istream* arg_yyin = 0,
+									 std::ostream* arg_yyout = 0 ) : yyFlexLexer(arg_yyin,arg_yyout) { set_debug(true); }
+		using yyFlexLexer::yylex;
+		virtual int yylex(yy::parser::semantic_type * const lval,
+											yy::parser::location_type * loc );
+
 
 	private:
-		parser::semantic_type* yylval = nullptr;
-		parser::location_type* location = nullptr;
+		yy::parser::semantic_type* yylval = nullptr;
+		yy::parser::location_type* location = nullptr;
 };
 }
 
