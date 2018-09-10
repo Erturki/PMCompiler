@@ -92,7 +92,7 @@ type_specifier
 	| UNSIGNED
 	| struct_or_union_specifier
 	| enum_specifier
-e	;
+	;
 	
 type_qualifier
 	: CONST
